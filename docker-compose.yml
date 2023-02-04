@@ -1,10 +1,10 @@
-version: "3"
+version: "3.7"
 services:
   app:
     container_name: drugstore-backend
     image: jotterkain/drugstore-backend
     build:
-      context: .
+      context: ./
       dockerfile: ./Dockerfile
       args:
         env: ${ENV}
@@ -17,19 +17,20 @@ services:
     container_name: postgres
     image: postgres:15.0-alpine
     environment:
-      POSTGRES_DB: drugstore
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      PGDATA: /data/drugstore/postgres
+      PGDATABASE: drugstore
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /data/postgres
+      PGHOST: db
     volumes:
-      - db:/data/drugstore/postgres
+      - db:/data/postgres
     ports:
       - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready", '-U', "${DB_USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 volumes:
   db:

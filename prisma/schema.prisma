@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,84 +15,102 @@ model drug_provider {
   town          String
   areas         String // quatiers in French
   address       String?
-  Drug          drug[]
-  Supply        supply[]
+  drug          drug[]
+  supply        supply[]
+  created_at    DateTime
 }
 
-model drug_form {
+model dosage_form {
   id   Int    @id @default(autoincrement())
   name String
-  Drug drug[]
+  drug drug[]
 }
 
 model drug_category {
   id   Int    @id @default(autoincrement())
   name String
-  Drug drug[]
+  drug drug[]
 }
 
 model drug {
-  id             String         @id @default(uuid()) @db.Uuid
-  name           String         @unique
-  dosage         Int // microgrammes
-  price          Float
-  description    String?
-  fab_date       DateTime
-  exp_date       DateTime
-  quantity       Int
-  size           Int // Like "60 pills, 200 ml" - it's like a volume
-  photos         drug_photo[]
-  drug_form      drug_form       @relation(fields: [drugFormId], references: [id])
-  drug_provider  drug_provider[]
-  categories     drug_category   @relation(fields: [drugCategoryId], references: [id])
-  purchases      purchase[]
-  Supply         supply[]
-  drugFormId     Int
-  drugCategoryId Int
-  movement       movement[]
+  id               String          @id @default(uuid()) @db.Uuid
+  name             String          @unique
+  dosage           Int // microgrammes
+  price            Decimal
+  description      String?
+  fab_date         DateTime
+  exp_date         DateTime
+  quantity         Int
+  size             Int // Like "60 pills, 200 ml" - it's like a volume
+  photos           drug_photo[]
+  dosage_form      dosage_form     @relation(fields: [dosage_form_id], references: [id])
+  drug_provider    drug_provider[]
+  categories       drug_category   @relation(fields: [drug_category_id], references: [id])
+  purchases        purchase[]
+  Supply           supply[]
+  dosage_form_id   Int
+  drug_category_id Int
+  movement         movement[]
+  created_at       DateTime
+  updated_at       DateTime
+}
+
+enum move_type {
+  SUPPLY
+  PURCHASE
 }
 
 model movement {
-  id       String   @id @default(uuid()) @db.Uuid
-  date     DateTime
-  quantity Int // if the number is positive, supply, else, purchase
-  Drug     drug    @relation(fields: [drugId], references: [id])
-  drugId   String  @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  createdAt   DateTime
+  quantity    Int
+  Drug        drug      @relation(fields: [drugId], references: [id])
+  drugId      String    @db.Uuid
+  move_type   move_type
+  purchase    purchase? @relation(fields: [purchase_id], references: [id])
+  purchase_id String?   @db.Uuid
 }
 
-model mustomer {
-  id          String     @id @default(uuid()) @db.Uuid
-  phoneNumber Int        @unique
-  firstName   String
-  lastName    String
-  town        String
-  addreas     String // quatiers in French
-  address     String?
-  Purchases   purchase[]
+model customer {
+  id             String     @id @default(uuid()) @db.Uuid
+  phone_number   Int        @unique
+  first_name     String
+  last_name      String
+  town           String
+  addreas        String // quatiers in French
+  address        String?
+  Purchases      purchase[]
+  deb_card_infos String
+  created_at     DateTime
+  updated_at     DateTime
 }
 
 model purchase {
-  id         String   @id @default(uuid()) @db.Uuid
-  quantity   Int
-  drug       drug     @relation(fields: [drugId], references: [id])
-  drugId     String   @db.Uuid
-  customer   mustomer @relation(fields: [customerId], references: [id])
-  customerId String   @db.Uuid
+  id          String     @id @default(uuid()) @db.Uuid
+  quantity    Int
+  drug        drug       @relation(fields: [drug_id], references: [id])
+  drug_id     String     @db.Uuid
+  customer    customer   @relation(fields: [customer_id], references: [id])
+  customer_id String     @db.Uuid
+  movement    movement[]
+  created_at  DateTime
 }
 
 model supply {
-  id             String       @id @default(uuid()) @db.Uuid
-  quantity       Int
-  drug           drug         @relation(fields: [drugId], references: [id])
-  drugId         String       @db.Uuid
-  drugProvider   drug_provider @relation(fields: [drugProviderId], references: [id])
-  drugProviderId String       @db.Uuid
+  id               String        @id @default(uuid()) @db.Uuid
+  quantity         Int
+  drug             drug          @relation(fields: [drugId], references: [id])
+  drugId           String        @db.Uuid
+  drug_provider    drug_provider @relation(fields: [drug_provider_id], references: [id])
+  drug_provider_id String        @db.Uuid
+  created_at       DateTime
 }
 
 model drug_photo {
-  id     String @id @default(uuid()) @db.Uuid
-  url    String @unique
-  size   Int
-  drug   drug   @relation(fields: [drugId], references: [id])
-  drugId String @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
+  url        String   @unique
+  size       Int
+  drug       drug     @relation(fields: [drug_id], references: [id])
+  drug_id    String   @db.Uuid
+  created_at DateTime
 }
